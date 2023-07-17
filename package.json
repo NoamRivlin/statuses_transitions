@@ -1,0 +1,14 @@
+{
+  "name": "methoda",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "concurrently \"yarn run server\" \"yarn run client\"",
+    "server": "cd server && yarn run dev",
+    "client": "cd client && yarn run dev"
+  },
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "concurrently": "^8.2.0"
+  }
+}
