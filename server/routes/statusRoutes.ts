@@ -13,7 +13,7 @@ router
   .post(addStatus)
   .get(getStatuses)
   .delete(deleteStatus)
-  .put(editInitStatus);
+  .patch(editInitStatus);
 router.route("/reset").delete(reset);
 
 export default router;

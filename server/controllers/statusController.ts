@@ -6,25 +6,22 @@ import Transition from "../models/transitionModel";
 // path: /api/statuses
 export const addStatus = async (req: Request, res: Response) => {
   const { name } = req.body;
-  const allStatuses = await Status.find({}, "statuses");
-  if (!allStatuses.length) {
+  const numberOfStatuses = await Status.count({});
+
+  if (numberOfStatuses === 0) {
     const status = await Status.create({
-      initStatus: { name },
-      statuses: [{ name, orphan: false }],
+      name,
+      init: true,
     });
     res.status(201).json({ status });
   }
-  if (allStatuses.length) {
-    const statusNameExists = await Status.findOne({ "statuses.name": name });
-    if (statusNameExists) {
+  if (numberOfStatuses > 0) {
+    if (await Status.findOne({ name })) {
       res.status(400).json({ message: "Status already exists" });
       return;
     }
-    const newStatus = await Status.findOneAndUpdate(
-      {},
-      { $push: { statuses: { name } } },
-      { new: true }
-    );
+    const newStatus = await Status.create({ name });
+
     res.status(201).json(newStatus);
   }
   try {
@@ -37,8 +34,8 @@ export const addStatus = async (req: Request, res: Response) => {
 // path: /api/statuses
 export const getStatuses = async (req: Request, res: Response) => {
   try {
-    const statuses = await Status.find({}, "statuses");
-    res.status(200).json(statuses);
+    const allStatuses = await Status.find({});
+    res.status(200).json(allStatuses);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
@@ -50,13 +47,24 @@ export const deleteStatus = async (req: Request, res: Response) => {
   const { name } = req.body;
   // check if the status is the initStatus
   try {
-    const statusToDelete = await Status.findOneAndUpdate(
-      {},
-      { $pull: { statuses: { name } } },
-      { new: true }
-    );
+    // Find the status to be deleted
+    const statusToDelete = await Status.findOne({ name });
+    if (!statusToDelete) {
+      res.status(400).json({ message: "Status does not exist" });
+      return;
+    }
 
-    // remove the status from the statuses array
+    if (statusToDelete.initStatus) {
+      // Find the first status that is not the one to be deleted
+      const newInitStatus = await Status.findOne({ name: { $ne: name } });
+
+      if (newInitStatus) {
+        // Set the new status as the initStatus
+        newInitStatus.initStatus = true;
+        await newInitStatus.save();
+      }
+    }
+    await statusToDelete.deleteOne();
 
     // remove the transitions that have the status as a source or target
     await Transition.deleteMany({
@@ -73,24 +81,6 @@ export const deleteStatus = async (req: Request, res: Response) => {
 export const editInitStatus = async (req: Request, res: Response) => {
   const { name } = req.body;
   try {
-    // update the initStatus field of the status document to the new status name
-    // and also make it's orphan and final fields false
-    const updatedStatus = await Status.findOneAndUpdate(
-      {},
-      { initStatus: { name }, statuses: { orphan: false, final: false } },
-      { new: true }
-    );
-    /* const updatedStatus = await Status.findOneAndUpdate(
-        {},
-        { initStatus: { name }  },
-        { new: true }
-        );
-        // if previous status is an  
-        if (!updatedStatus) {
-        res.status(404).json({ message: "Status not found" });
-        return;
-        }
-        res.status(200).json(updatedStatus); */
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
@@ -100,8 +90,7 @@ export const editInitStatus = async (req: Request, res: Response) => {
 // path: /api/statuses/reset
 export const reset = async (req: Request, res: Response) => {
   try {
-    // there is only one status
-    await Status.deleteOne({});
+    await Status.deleteMany({});
     await Transition.deleteMany({});
     res.status(200).json({ message: "Reset successful" });
   } catch (error: any) {

@@ -2,7 +2,6 @@ import mongoose from "mongoose";
 
 const transitionSchema = new mongoose.Schema({
   name: { type: String, unique: true },
-  transitionId: mongoose.Schema.Types.ObjectId,
   source: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Status",
