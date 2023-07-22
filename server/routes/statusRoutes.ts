@@ -5,6 +5,7 @@ import {
   deleteStatus,
   reset,
   editInitStatus,
+  test,
 } from "../controllers/statusController";
 const router: Router = express.Router();
 
@@ -14,6 +15,6 @@ router
   .get(getStatuses)
   .delete(deleteStatus)
   .patch(editInitStatus);
-router.route("/reset").delete(reset);
+router.route("/reset").delete(reset).post(test);
 
 export default router;

@@ -1,16 +1,23 @@
-import mongoose from "mongoose";
+import mongoose, { Document } from "mongoose";
+
+// when used in transition controller it breaks the code
+export interface ITransition extends Document {
+  name: string;
+  sourceId: mongoose.Types.ObjectId;
+  targetId: mongoose.Types.ObjectId;
+}
 
 const transitionSchema = new mongoose.Schema({
-  name: { type: String, unique: true },
-  source: {
+  name: { type: String, unique: true, required: true },
+  sourceId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Status",
-    statusName: String,
+    required: true,
   },
-  target: {
+  targetId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Status",
-    statusName: String,
+    required: true,
   },
 });
 const Transition = mongoose.model("Transition", transitionSchema);
