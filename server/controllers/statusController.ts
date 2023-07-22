@@ -2,14 +2,13 @@ import { Request, Response } from "express";
 import Status, { IStatus } from "../models/statusModel";
 import Transition, { ITransition } from "../models/transitionModel";
 import mongoose from "mongoose";
-import { log } from "console";
 
 // method: POST
 // path: /api/statuses
 export const addStatus = async (req: Request, res: Response) => {
   const { name } = req.body;
-  const numberOfStatuses = await Status.count({});
   try {
+    const numberOfStatuses = await Status.count({}); // returns a number
     if (numberOfStatuses === 0) {
       const status = await Status.create({
         name,
@@ -35,6 +34,10 @@ export const addStatus = async (req: Request, res: Response) => {
 export const getStatuses = async (req: Request, res: Response) => {
   try {
     const allStatuses = await Status.find({});
+    if (!allStatuses || allStatuses.length < 1) {
+      res.status(400).json({ message: "No statuses found" });
+      return;
+    }
     res.status(200).json(allStatuses);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
@@ -44,11 +47,11 @@ export const getStatuses = async (req: Request, res: Response) => {
 // method: DELETE
 // path: /api/statuses
 export const deleteStatus = async (req: Request, res: Response) => {
-  const { name } = req.body;
+  const { id } = req.body;
   // check if the status is the initStatus
   try {
     // Find the status to be deleted
-    const statusToDelete = await Status.findOne({ name });
+    const statusToDelete = await Status.findOne({ id });
     if (!statusToDelete) {
       res.status(400).json({ message: "Status does not exist" });
       return;
@@ -56,7 +59,7 @@ export const deleteStatus = async (req: Request, res: Response) => {
 
     if (statusToDelete.initStatus) {
       // Find the first status that is not the one to be deleted
-      const newInitStatus = await Status.findOne({ name: { $ne: name } });
+      const newInitStatus = await Status.findOne({ _id: { $ne: id } });
 
       if (newInitStatus) {
         // Set the new status as the initStatus
@@ -68,7 +71,7 @@ export const deleteStatus = async (req: Request, res: Response) => {
 
     // remove the transitions that have the status as a source or target
     await Transition.deleteMany({
-      $or: [{ "source.statusName": name }, { "target.statusName": name }],
+      $or: [{ sourceId: id }, { targetId: id }],
     });
     res.status(200).json(statusToDelete);
   } catch (error: any) {
@@ -82,41 +85,21 @@ export const editInitStatus = async (req: Request, res: Response) => {
   const { id } = req.body;
 
   try {
-    // interface IStatusPopulated extends IStatus {
-    //   transitions: [{ targetId: mongoose.Types.ObjectId }];
-    // }
     type IStatusPopulated = Omit<IStatus, "transitions"> & {
       transitions: Array<{ targetId: mongoose.Types.ObjectId }>;
     };
 
-    /* interface User {
-    id: mongoose.Types.ObjectId;
-    name: string;
-    pets: Array<mongoose.Types.ObjectId>;
-}
-
-  interface Pet {
-    name: string;
-}
-
-  type UserPopulated = Omit<User, 'pets'> & {
-    pets: Array<Pet>;
-};
-
-
- */
     const statuses: IStatusPopulated[] = await Status.find({}).populate({
       path: "transitions",
       model: "Transition",
       select: "targetId", // Specify the property you want to take from the Transition model
-      // populate: { path: "targetId", model: "Status" },
     });
 
     const oldInit = statuses.find((status) => status.initStatus);
     const newInit = statuses.find(
       (status) => status._id.toString() === id.toString()
     );
-    console.log("oldInit", oldInit, "newInit", newInit);
+    // console.log("oldInit", oldInit, "newInit", newInit);
 
     if (!oldInit || !newInit) {
       res.status(400).json({ message: "Status does not exist" });
@@ -127,116 +110,52 @@ export const editInitStatus = async (req: Request, res: Response) => {
       return;
     }
 
-    await Status.updateOne(
-      { _id: oldInit._id },
-      // does the old init becomes an orphan? depends on transitions
-      { $set: { initStatus: false } }
-    );
-    await Status.updateOne(
-      { _id: newInit._id },
-      { $set: { initStatus: true, orphan: false } }
-    );
+    // update the initStatus property of the statuses in a single query
+    await Status.bulkWrite([
+      {
+        updateOne: {
+          filter: { _id: oldInit._id },
+          update: { $set: { initStatus: false } },
+        },
+      },
+      {
+        updateOne: {
+          filter: { _id: newInit._id },
+          update: { $set: { initStatus: true, orphan: false } },
+        },
+      },
+    ]);
 
-    // await Status.bulkWrite([
-    //   {
-    //     updateOne: {
-    //       filter: { _id: oldInit._id },
-    //       update: { $set: { initStatus: false } },
-    //     },
-    //   },
-    //   {
-    //     updateOne: {
-    //       filter: { _id: newInit._id },
-    //       update: { $set: { initStatus: true, orphan: false } },
-    //     },
-    //   },
-    // ]);
-
-    interface INodeSearched {
-      [key: string]: boolean;
-    }
-    const nodeSearched: INodeSearched = {
-      [newInit.id.toString()]: true,
+    const nodeSearched: { [key: string]: boolean } = {
+      // [newInit.id.toString()]: true,
+      [newInit._id.toString()]: true,
     };
-    // const nodeSearched: { [key: string]: boolean } = { [newInit.id.toString()]: true };
+
+    console.log("nodeSearched right after creating it", nodeSearched);
 
     interface INode {
-      // status: IStatus & {transitions: ITransition[]};
       status: IStatusPopulated;
-      // status: IStatus & {
-      //   transitions: Array<{
-      //     name: string;
-      //     transitionId: mongoose.Types.ObjectId;
-      //     targetId: mongoose.Types.ObjectId;
-      //   }>;
-      // };
       checked: boolean;
     }
+
+    newInit.orphan = false;
+    newInit.initStatus = true;
+    oldInit.initStatus = false;
+
     const queue: INode[] = [
       {
-        status: {
-          ...newInit,
-          orphan: false,
-          initStatus: true,
-        },
+        status: newInit,
         checked: false,
       },
     ];
 
-    // let neighboorsLeft = true;
-    // // while (queue.some((item) => !item.checked)){}
-    // while (neighboorsLeft) {
-    //   const currentNode: INode | undefined = queue.find(
-    //     (item) => !item.checked
-    //   );
-
-    //   if (!currentNode) {
-    //     neighboorsLeft = false;
-    //     break;
-    //   }
-
-    //   // transitions now include the targetId
-    //   if (currentNode?.status?.transitions.length > 0) {
-    //     for (const transition of currentNode.status.transitions) {
-    //       // if the targetId is not in the nodeSearched object
-    //       if (!nodeSearched[transition?.targetId?.toString()]) {
-    //         // if it is not in the nodeSearched object, add it and set it to true
-    //         nodeSearched[transition?.targetId?.toString()] = true;
-    //         // find the status that the newInit is transitioning to
-    //         const status = statuses.find(
-    //           (status) =>
-    //             status._id.toString() === transition.targetId.toString()
-    //         );
-    //         if (!status) {
-    //           return;
-    //         }
-    //         status.orphan = false;
-    //         await status.save();
-    //         // add the status to the queue so we can check its neighboors
-    //         queue.push({
-    //           status,
-    //           checked: false,
-    //         });
-    //       }
-    //     }
-    //   }
-    //   currentNode.checked = true;
-    // }
-
-    // const orphans = statuses.filter((status) => !nodeSearched[status.id]);
-
-    // for (const status of orphans) {
-    //   status.orphan = true;
-    //   await status.save();
-    // }
-
+    // console.log(
+    //   "queue",
+    //   queue,
+    //   "queue.some",
+    //   queue.some((item) => !item.checked)
+    // );
     // we check if there are any nodes left to check
-    console.log(
-      "queue",
-      queue,
-      "queue.some",
-      queue.some((item) => !item.checked)
-    );
     while (queue.some((item) => !item.checked)) {
       const currentNode = queue.find((item) => !item.checked);
       console.log("currentNode", currentNode);
@@ -244,7 +163,6 @@ export const editInitStatus = async (req: Request, res: Response) => {
       // console.log("currentNode.status", currentNode.status);
       if (currentNode.status.transitions?.length) {
         for (const transition of currentNode.status.transitions) {
-          // if the targetId is not in the nodeSearched object
           console.log(
             "nodeSearched",
             nodeSearched
@@ -253,7 +171,7 @@ export const editInitStatus = async (req: Request, res: Response) => {
             // "transition",
             // transition
           );
-
+          // if the targetId is not in the nodeSearched object
           if (!nodeSearched[transition.targetId.toString()]) {
             // console.log(
             //   "doesnt find targetId in nodeSearched",
@@ -282,12 +200,12 @@ export const editInitStatus = async (req: Request, res: Response) => {
       }
       currentNode.checked = true;
     }
-    console.log("nodeSearched", nodeSearched);
+    // console.log("nodeSearched", nodeSearched);
 
     const orphans = statuses.filter(
       (status) => !nodeSearched[status._id.toString()]
     );
-    console.log("orphans", orphans);
+    // console.log("orphans", orphans);
 
     // we check if the old init is an orphan by
     // checking if it is in the nodeSearched object
@@ -299,8 +217,8 @@ export const editInitStatus = async (req: Request, res: Response) => {
       status.orphan = true;
       await status.save();
     }
-    const newStatuses = await Status.find({});
-    res.status(202).json({ statuses, newStatuses });
+    const updatedStatuses = await Status.find({});
+    res.status(200).json({ updatedStatuses });
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
@@ -330,7 +248,7 @@ export const test = async (req: Request, res: Response) => {
       { name: "deploy", initStatus: false, orphan: true, transitions: [] },
       { name: "cancel", initStatus: false, orphan: true, transitions: [] },
     ]);
-    console.log("statuses before transitions", statuses);
+    // con sole.log("statuses before transitions", statuses);
 
     if (statuses.length === 0) {
       res.status(400).json({ message: "Statuses array is empty" });
@@ -362,13 +280,6 @@ export const test = async (req: Request, res: Response) => {
       },
     ]);
 
-    // add the transitions to the statuses
-    // statuses
-    //   .find((status) => status.name === "start")
-    //   ?.transitions.push(
-    //     transitions?.find((transition) => transition.name === "startReview")
-    //   );
-
     // Add the transitions to the statuses using type guards to check for undefined values
     const startStatus = statuses.find((status) => status.name === "start");
     const startReviewTransition = transitions.find(
@@ -378,7 +289,7 @@ export const test = async (req: Request, res: Response) => {
     if (startStatus && startReviewTransition) {
       startStatus.transitions.push(startReviewTransition._id);
     }
-    // now do the same for the other statuses and transitions
+
     const reviewStatus = statuses.find((status) => status.name === "review");
     const reviewDeployTransition = transitions.find(
       (transition) => transition.name === "reviewDeploy"
@@ -403,10 +314,8 @@ export const test = async (req: Request, res: Response) => {
       rejectedStatus.transitions.push(rejectedDeployTransition._id);
     }
 
-    // update the statuses orphan property
     statuses.find((status) => status.name === "review")!.orphan = false;
     statuses.find((status) => status.name === "deploy")!.orphan = false;
-    // save the statuses
     for (const status of statuses) {
       await status.save();
     }

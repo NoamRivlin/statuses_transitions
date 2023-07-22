@@ -5,6 +5,8 @@ export interface ITransition extends Document {
   name: string;
   sourceId: mongoose.Types.ObjectId;
   targetId: mongoose.Types.ObjectId;
+  // sourceId: string;
+  // targetId: string;
 }
 
 const transitionSchema = new mongoose.Schema({

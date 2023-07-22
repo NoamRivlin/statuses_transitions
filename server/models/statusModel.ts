@@ -15,21 +15,7 @@ export interface IStatus extends Document {
 
 const statusSchema = new mongoose.Schema({
   name: { type: String, unique: true, required: true },
-  // transitions: [
-  //   {
-  //     name: { type: String, required: true }, // Add the 'name' property
-  //     transitionId: {
-  //       type: mongoose.Schema.Types.ObjectId,
-  //       ref: "Transition",
-  //       required: true,
-  //     },
-  //     targetId: {
-  //       type: mongoose.Schema.Types.ObjectId,
-  //       ref: "Status",
-  //       required: true,
-  //     },
-  //   },
-  // ],
+
   transitions: Array<mongoose.Schema.Types.ObjectId>,
   initStatus: { type: Boolean, default: false },
   orphan: { type: Boolean, default: true },

@@ -2,10 +2,15 @@ import { Request, Response } from "express";
 import Status from "../models/statusModel";
 import Transition from "../models/transitionModel";
 import { IStatus } from "../models/statusModel";
+import mongoose from "mongoose";
 import { ITransition } from "../models/transitionModel";
 
 export const addTransition = async (req: Request, res: Response) => {
   const { name, sourceId, targetId } = req.body;
+  // const name: string = req.body.name;
+  // const sourceId: mongoose.Types.ObjectId = req.body.sourceId;
+  // const targetId: mongoose.Types.ObjectId = req.body.targetId;
+
   try {
     const transitionNameExists = await Transition.findOne({
       name,
@@ -15,7 +20,7 @@ export const addTransition = async (req: Request, res: Response) => {
       return;
     }
 
-    const transition = await Transition.create({
+    const transition: ITransition = await Transition.create({
       name,
       sourceId: sourceId,
       targetId: targetId,
@@ -29,11 +34,7 @@ export const addTransition = async (req: Request, res: Response) => {
         await targetStatus.save();
       }
     }
-    // sourceStatus?.transitions.push({
-    //   name,
-    //   transitionId: transition._id,
-    //   targetId,
-    // });
+
     sourceStatus?.transitions.push(transition._id);
 
     await sourceStatus?.save();
@@ -72,7 +73,7 @@ export const deleteTransition = async (req: Request, res: Response) => {
     sourceStatus.transitions = sourceStatus.transitions.filter(
       (transiton) =>
         // transiton.transitionId?.toString() !== transitionToDelete._id.toString()
-        transiton.toString() !== transitionToDelete._id.toString()
+        transiton !== transitionToDelete._id
     );
     await sourceStatus.save();
     await transitionToDelete.deleteOne();
