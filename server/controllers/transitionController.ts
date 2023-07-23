@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import Status from "../models/statusModel";
 import Transition from "../models/transitionModel";
 import { IStatus } from "../models/statusModel";
-import mongoose from "mongoose";
 import { ITransition } from "../models/transitionModel";
 
 export const addTransition = async (req: Request, res: Response) => {
@@ -39,7 +38,8 @@ export const addTransition = async (req: Request, res: Response) => {
 
     await sourceStatus?.save();
 
-    res.status(201).json({ sourceStatus, transition });
+    res.status(201).json(transition);
+    // res.status(201).json({ sourceStatus, transition });
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }

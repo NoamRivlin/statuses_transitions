@@ -4,18 +4,18 @@ import Transition, { ITransition } from "../models/transitionModel";
 import mongoose from "mongoose";
 
 // method: POST
-// path: /api/statuses
+// path: /api/status
 export const addStatus = async (req: Request, res: Response) => {
   const { name } = req.body;
   try {
     const numberOfStatuses = await Status.count({}); // returns a number
     if (numberOfStatuses === 0) {
-      const status = await Status.create({
+      const initStatus = await Status.create({
         name,
         initStatus: true,
         orphan: false,
       });
-      res.status(201).json({ status });
+      res.status(201).json({ initStatus });
       return;
     }
     if (await Status.findOne({ name })) {
@@ -30,7 +30,7 @@ export const addStatus = async (req: Request, res: Response) => {
 };
 
 // method: GET
-// path: /api/statuses
+// path: /api/status
 export const getStatuses = async (req: Request, res: Response) => {
   try {
     const allStatuses = await Status.find({});
@@ -42,18 +42,20 @@ export const getStatuses = async (req: Request, res: Response) => {
 };
 
 // method: DELETE
-// path: /api/statuses
+// path: /api/status
 export const deleteStatus = async (req: Request, res: Response) => {
   const { id } = req.body;
-  // check if the status is the initStatus
+
+  // id is a string
   try {
     // Find the status to be deleted
-    const statusToDelete = await Status.findOne({ id });
+    const statusToDelete = await Status.findOne({ _id: id });
+
     if (!statusToDelete) {
       res.status(400).json({ message: "Status does not exist" });
       return;
     }
-
+    // check if the status is the initStatus
     if (statusToDelete.initStatus) {
       // Find the first status that is not the one to be deleted
       const newInitStatus = await Status.findOne({ _id: { $ne: id } });
@@ -77,7 +79,7 @@ export const deleteStatus = async (req: Request, res: Response) => {
 };
 
 // method: PATCH
-// path: /api/statuses
+// path: /api/status
 export const editInitStatus = async (req: Request, res: Response) => {
   const { id } = req.body;
 
@@ -222,7 +224,7 @@ export const editInitStatus = async (req: Request, res: Response) => {
 };
 
 // method: DELETE
-// path: /api/statuses/reset
+// path: /api/status/reset
 export const reset = async (req: Request, res: Response) => {
   try {
     await Status.deleteMany({});
@@ -234,7 +236,7 @@ export const reset = async (req: Request, res: Response) => {
 };
 
 // method: POST
-// path: /api/statuses/reset
+// path: /api/status/reset
 export const test = async (req: Request, res: Response) => {
   try {
     // create statuses array with the initStatus and the other statuses with empty transitions, names are start,review, rejected, deploy, cancel

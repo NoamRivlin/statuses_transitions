@@ -12,9 +12,13 @@
   grid-template-columns: 1fr 1fr; /* Two equal columns */
   gap: 20px;
 }
+.add-btn {
+  margin-bottom: 20px;
+}
 
 .transition {
   display: flex;
+  border: 1px solid rgb(86, 91, 91);
 
   /* flex-direction: row; */
 }
@@ -26,6 +30,7 @@
 } */
 
 .reset-btns-container {
+  margin-top: 30px;
   display: flex;
   flex-direction: row;
   justify-content: center;
@@ -37,7 +42,7 @@
 }
 
 .reset-btn {
-  font-size: 2.3rem;
+  font-size: 2.6rem;
   padding: 0;
   background-color: red;
   color: black;
@@ -47,5 +52,5 @@
 
 .reset-btn:hover {
   border: 1px solid transparent;
-  color: rgb(46, 81, 111);
+  color: rgb(62, 115, 161);
 }
