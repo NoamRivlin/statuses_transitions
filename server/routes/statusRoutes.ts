@@ -15,6 +15,6 @@ router
   .get(getStatuses)
   .delete(deleteStatus)
   .patch(editInitStatus);
-router.route("/reset").delete(reset).post(test);
+router.route("/reset").delete(reset).get(test);
 
 export default router;

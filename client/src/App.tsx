@@ -151,7 +151,8 @@ function App() {
   const handleTest = async () => {
     try {
       setIsLoading(true);
-      const res = await axios.post(`${API_URL}/api/status/reset`);
+      const res = await axios.get(`${API_URL}/api/status/reset`);
+
       // fetchStatusesAndTransitions();
       setStatuses(res?.data?.statuses);
       setTransitions(res?.data?.transitions);
@@ -179,7 +180,7 @@ function App() {
       const res = await axios.delete(`${API_URL}/api/status/reset`);
       resetLocalState();
       setIsLoading(false);
-      console.log(res);
+      console.log("Delete", res);
     } catch (error) {
       console.log(error);
     }
@@ -187,17 +188,17 @@ function App() {
 
   const onStart = async () => {
     await handleReset();
-    resetLocalState();
+    // resetLocalState();
     await handleTest();
   };
 
-  // useEffect(() => {
-  //   try {
-  //     // onStart();
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // }, []);
+  useEffect(() => {
+    try {
+      onStart();
+    } catch (error) {
+      console.log(error);
+    }
+  }, []);
 
   return (
     <>
@@ -362,9 +363,9 @@ function App() {
             Reset
           </button>
         </div>
-        <div className="test-btn">
-          <button onClick={handleTest}>Test</button>
-        </div>
+        {/* <div className="test-btn">
+          <button onClick={()=>handleTest()}>Test</button>
+        </div> */}
       </div>
     </>
   );
