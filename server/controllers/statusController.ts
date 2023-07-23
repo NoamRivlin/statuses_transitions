@@ -239,7 +239,7 @@ export const reset = async (req: Request, res: Response) => {
   }
 };
 
-// method: POST
+// method: GET
 // path: /api/status/reset
 export const test = async (req: Request, res: Response) => {
   try {
@@ -251,7 +251,7 @@ export const test = async (req: Request, res: Response) => {
       { name: "deploy", initStatus: false, orphan: true, transitions: [] },
       { name: "cancel", initStatus: false, orphan: true, transitions: [] },
     ]);
-    // con sole.log("statuses before transitions", statuses);
+    // console.log("statuses before transitions", statuses);
 
     if (statuses.length === 0) {
       res.status(400).json({ message: "Statuses array is empty" });

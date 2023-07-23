@@ -50,7 +50,7 @@ function App() {
       setTransitions(fetchedTransitions);
       setIsLoading(false);
     } catch (error) {
-      console.log(error);
+      console.error(error);
     } finally {
     }
   };
@@ -62,13 +62,12 @@ function App() {
       }
       // setIsLoading(true);
       const res = await axios.post(`${API_URL}/api/status/`, { name });
-      console.log("res.data", res.data);
 
       setStatuses([...statuses, res.data]);
       setStatusName("");
       // setIsLoading(false);
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   };
 
@@ -102,7 +101,7 @@ function App() {
       setToStatus("");
       // setIsLoading(false);
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   };
 
@@ -113,7 +112,6 @@ function App() {
       const res = await axios.delete(`${API_URL}/api/status/`, {
         data: { id },
       });
-      // console.log("res.data", res.data);
       // fetchStatusesAndTransitions();
 
       // setStatuses(statuses.filter((status) => status._id !== id));
@@ -127,15 +125,13 @@ function App() {
       );
       setIsLoading(false);
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   };
 
   const handleDeleteTransition = async (id: string) => {};
 
   const handleEditInitStatus = async (id: string) => {
-    console.log("id", id);
-
     setInitStatus(statuses.find((status) => status._id === id));
     try {
       const res = await axios.patch(`${API_URL}/api/status/`, {
@@ -144,7 +140,7 @@ function App() {
       setStatuses(res.data.updatedStatuses);
       // fetchStatusesAndTransitions();
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   };
 
@@ -161,7 +157,7 @@ function App() {
       );
       setIsLoading(false);
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   };
   const resetLocalState = () => {
@@ -180,9 +176,8 @@ function App() {
       const res = await axios.delete(`${API_URL}/api/status/reset`);
       resetLocalState();
       setIsLoading(false);
-      console.log("Delete", res);
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   };
 
@@ -196,7 +191,7 @@ function App() {
     try {
       onStart();
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   }, []);
 
@@ -236,7 +231,6 @@ function App() {
                   {status.name}
                   <button
                     onClick={() => {
-                      console.log("status", status.name);
                       handleDeleteStatus(status._id);
                     }}
                   >
@@ -264,13 +258,6 @@ function App() {
             className="source"
             value={fromStatus}
             onChange={(e) => {
-              console.log(
-                "e.target.value",
-                e.target.value,
-                "fromStatus",
-                fromStatus
-              );
-
               setFromStatus(e.target.value);
               setToStatus("");
             }}
@@ -293,12 +280,6 @@ function App() {
             value={toStatus}
             onChange={(e) => {
               setToStatus(e.target.value);
-              console.log(
-                "e.target.value",
-                e.target.value,
-                "toStatus",
-                toStatus
-              );
             }}
             disabled={!fromStatus}
           >
