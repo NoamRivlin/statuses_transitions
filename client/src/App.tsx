@@ -60,13 +60,13 @@ function App() {
       if (name === statuses.find((status) => status.name === name)?.name) {
         return;
       }
-      setIsLoading(true);
+      // setIsLoading(true);
       const res = await axios.post(`${API_URL}/api/status/`, { name });
       console.log("res.data", res.data);
 
       setStatuses([...statuses, res.data]);
       setStatusName("");
-      setIsLoading(false);
+      // setIsLoading(false);
     } catch (error) {
       console.log(error);
     }
@@ -82,7 +82,6 @@ function App() {
     targetId: string;
   }) => {
     try {
-      // setIsLoading(true);
       if (
         name ===
         transitions.find((transition) => transition.name === name)?.name
@@ -90,6 +89,7 @@ function App() {
         return;
       }
 
+      // setIsLoading(true);
       const res = await axios.post(`${API_URL}/api/transition/`, {
         name,
         sourceId,
@@ -100,6 +100,7 @@ function App() {
       setTransitionName("");
       setFromStatus("");
       setToStatus("");
+      // setIsLoading(false);
     } catch (error) {
       console.log(error);
     }
@@ -112,14 +113,19 @@ function App() {
       const res = await axios.delete(`${API_URL}/api/status/`, {
         data: { id },
       });
+      // console.log("res.data", res.data);
       // fetchStatusesAndTransitions();
-      setStatuses(statuses.filter((status) => status._id !== id));
+
+      // setStatuses(statuses.filter((status) => status._id !== id));
+      setStatuses(res.data);
+      // give me all the transition that dont have the deleted status as source or target
       setTransitions(
         transitions.filter(
           (transition) =>
-            transition.sourceId !== id || transition.targetId !== id
+            transition.sourceId !== id && transition.targetId !== id
         )
       );
+      setIsLoading(false);
     } catch (error) {
       console.log(error);
     }
@@ -128,12 +134,15 @@ function App() {
   const handleDeleteTransition = async (id: string) => {};
 
   const handleEditInitStatus = async (id: string) => {
+    console.log("id", id);
+
     setInitStatus(statuses.find((status) => status._id === id));
     try {
-      await axios.patch(`${API_URL}/api/status/`, {
-        data: { id },
+      const res = await axios.patch(`${API_URL}/api/status/`, {
+        id,
       });
-      fetchStatusesAndTransitions();
+      setStatuses(res.data.updatedStatuses);
+      // fetchStatusesAndTransitions();
     } catch (error) {
       console.log(error);
     }
@@ -143,8 +152,13 @@ function App() {
     try {
       setIsLoading(true);
       const res = await axios.post(`${API_URL}/api/status/reset`);
-      fetchStatusesAndTransitions();
-      console.log(res);
+      // fetchStatusesAndTransitions();
+      setStatuses(res?.data?.statuses);
+      setTransitions(res?.data?.transitions);
+      setInitStatus(
+        res?.data?.statuses.find((status: any) => status.initStatus)
+      );
+      setIsLoading(false);
     } catch (error) {
       console.log(error);
     }
@@ -177,13 +191,13 @@ function App() {
     await handleTest();
   };
 
-  useEffect(() => {
-    try {
-      // onStart();
-    } catch (error) {
-      console.log(error);
-    }
-  }, []);
+  // useEffect(() => {
+  //   try {
+  //     // onStart();
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // }, []);
 
   return (
     <>
@@ -207,14 +221,13 @@ function App() {
           ) : (
             statuses.length > 0 &&
             statuses.map((status) => (
-              <div key={status._id}>
+              <div key={status._id} className="status">
                 <label>
                   <input
                     type="radio"
                     name="status"
-                    className="status"
                     value={status._id}
-                    checked={initStatus === status._id}
+                    checked={initStatus?._id === status._id}
                     onChange={() => {
                       handleEditInitStatus(status._id);
                     }}
@@ -230,6 +243,7 @@ function App() {
                   </button>
                   {status.initStatus && <span>{"[Initial Status]"}</span>}
                   {status.orphan && <span>{"[Orphan]"}</span>}
+                  {status.transitions.length < 1 && <span>{"[Final]"}</span>}
                 </label>
               </div>
             ))
@@ -317,29 +331,27 @@ function App() {
           ) : (
             transitions.length > 0 &&
             transitions.map((transition) => (
-              <div key={transition._id} className="transition">
-                <ul>
-                  <li>
-                    {transition.name}:{" "}
-                    {
-                      statuses.find(
-                        (status) => status._id === transition.sourceId
-                      )?.name
-                    }
-                    {"-> "}
-                    {
-                      statuses.find(
-                        (status) => status._id === transition.targetId
-                      )?.name
-                    }
-                    <button
-                      onClick={() => handleDeleteTransition(transition._id)}
-                    >
-                      Remove
-                    </button>
-                  </li>
-                </ul>
-              </div>
+              <ul key={transition._id} className="transition">
+                <li>
+                  {transition.name}:{" "}
+                  {
+                    statuses.find(
+                      (status) => status._id === transition.sourceId
+                    )?.name
+                  }
+                  {"-> "}
+                  {
+                    statuses.find(
+                      (status) => status._id === transition.targetId
+                    )?.name
+                  }
+                  <button
+                    onClick={() => handleDeleteTransition(transition._id)}
+                  >
+                    Remove
+                  </button>
+                </li>
+              </ul>
             ))
           )}
         </div>

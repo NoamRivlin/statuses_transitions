@@ -72,7 +72,11 @@ export const deleteStatus = async (req: Request, res: Response) => {
     await Transition.deleteMany({
       $or: [{ sourceId: id }, { targetId: id }],
     });
-    res.status(200).json(statusToDelete);
+
+    // get all the updated statuses
+    const updatedStatuses = await Status.find({});
+    // res.status(200).json(statusToDelete);
+    res.status(200).json(updatedStatuses);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
