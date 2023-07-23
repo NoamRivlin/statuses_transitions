@@ -6,9 +6,6 @@ import { ITransition } from "../models/transitionModel";
 
 export const addTransition = async (req: Request, res: Response) => {
   const { name, sourceId, targetId } = req.body;
-  // const name: string = req.body.name;
-  // const sourceId: mongoose.Types.ObjectId = req.body.sourceId;
-  // const targetId: mongoose.Types.ObjectId = req.body.targetId;
 
   try {
     const transitionNameExists = await Transition.findOne({
@@ -39,7 +36,6 @@ export const addTransition = async (req: Request, res: Response) => {
     await sourceStatus?.save();
 
     res.status(201).json(transition);
-    // res.status(201).json({ sourceStatus, transition });
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
@@ -71,9 +67,7 @@ export const deleteTransition = async (req: Request, res: Response) => {
     }
 
     sourceStatus.transitions = sourceStatus.transitions.filter(
-      (transiton) =>
-        // transiton.transitionId?.toString() !== transitionToDelete._id.toString()
-        transiton !== transitionToDelete._id
+      (transiton) => transiton !== transitionToDelete._id
     );
     await sourceStatus.save();
     await transitionToDelete.deleteOne();

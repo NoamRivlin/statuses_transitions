@@ -5,9 +5,6 @@
 }
 
 .container {
-  /* display: flex;
-  gap: 20px; */
-
   display: grid;
   grid-template-columns: 1fr 1fr; /* Two equal columns */
   gap: 20px;
@@ -18,24 +15,11 @@
 
 .transition {
   display: flex;
-  /* border: 1px solid rgb(86, 91, 91); */
-
-  /* flex-direction: row; */
 }
 .status {
   display: flex;
   margin-bottom: 20px;
 }
-
-/* .status-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: left;
-  align-items: center;
-} */
-
-/* .transition-container {
-} */
 
 .reset-btns-container {
   margin-top: 30px;

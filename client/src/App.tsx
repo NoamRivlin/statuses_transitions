@@ -5,22 +5,20 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 interface IStatus {
   name: string;
-  _id: any; //mongoose Ojectid
+  _id: string;
   transitions: Array<any>;
   initStatus: boolean;
   orphan: boolean;
 }
 
 interface ITransition {
-  _id: any; //mongoose Ojectid
+  _id: string;
   name: string;
-  sourceId: any; //mongoose Ojectid
-  targetId: any; //mongoose Ojectid
+  sourceId: string;
+  targetId: string;
 }
-// remember to remove test button and
-// and bring onStart function
+
 function App() {
-  // still theres a delay in the loading text showing up
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [statuses, setStatuses] = useState<IStatus[]>([]);
   const [transitions, setTransitions] = useState<ITransition[]>([]);
@@ -34,7 +32,6 @@ function App() {
     setIsLoading(true);
     try {
       // do a single request to get both statuses and transitions
-
       const fetchedStatuses = (await axios.get(`${API_URL}/api/status`))?.data;
       const fetchedTransitions = (await axios.get(`${API_URL}/api/transition`))
         ?.data;
@@ -60,12 +57,10 @@ function App() {
       if (name === statuses.find((status) => status.name === name)?.name) {
         return;
       }
-      // setIsLoading(true);
       const res = await axios.post(`${API_URL}/api/status/`, { name });
 
       setStatuses([...statuses, res.data]);
       setStatusName("");
-      // setIsLoading(false);
     } catch (error) {
       console.error(error);
     }
@@ -88,7 +83,6 @@ function App() {
         return;
       }
 
-      // setIsLoading(true);
       const res = await axios.post(`${API_URL}/api/transition/`, {
         name,
         sourceId,
@@ -99,7 +93,6 @@ function App() {
       setTransitionName("");
       setFromStatus("");
       setToStatus("");
-      // setIsLoading(false);
     } catch (error) {
       console.error(error);
     }
@@ -112,17 +105,15 @@ function App() {
       const res = await axios.delete(`${API_URL}/api/status/`, {
         data: { id },
       });
-      // fetchStatusesAndTransitions();
 
-      // setStatuses(statuses.filter((status) => status._id !== id));
       setStatuses(res.data);
-      // give me all the transition that dont have the deleted status as source or target
       setTransitions(
         transitions.filter(
           (transition) =>
             transition.sourceId !== id && transition.targetId !== id
         )
       );
+
       setIsLoading(false);
     } catch (error) {
       console.error(error);
@@ -138,7 +129,6 @@ function App() {
         id,
       });
       setStatuses(res.data.updatedStatuses);
-      // fetchStatusesAndTransitions();
     } catch (error) {
       console.error(error);
     }
@@ -149,7 +139,6 @@ function App() {
       setIsLoading(true);
       const res = await axios.get(`${API_URL}/api/status/reset`);
 
-      // fetchStatusesAndTransitions();
       setStatuses(res?.data?.statuses);
       setTransitions(res?.data?.transitions);
       setInitStatus(
@@ -183,7 +172,6 @@ function App() {
 
   const onStart = async () => {
     await handleReset();
-    // resetLocalState();
     await handleTest();
   };
 

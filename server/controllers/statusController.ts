@@ -46,9 +46,7 @@ export const getStatuses = async (req: Request, res: Response) => {
 export const deleteStatus = async (req: Request, res: Response) => {
   const { id } = req.body;
 
-  // id is a string
   try {
-    // Find the status to be deleted
     const statusToDelete = await Status.findOne({ _id: id });
 
     if (!statusToDelete) {
@@ -73,7 +71,6 @@ export const deleteStatus = async (req: Request, res: Response) => {
       $or: [{ sourceId: id }, { targetId: id }],
     });
 
-    // get all the updated statuses
     const updatedStatuses = await Status.find({});
     // res.status(200).json(statusToDelete);
     res.status(200).json(updatedStatuses);
@@ -102,7 +99,6 @@ export const editInitStatus = async (req: Request, res: Response) => {
     const newInit = statuses.find(
       (status) => status._id.toString() === id.toString()
     );
-    // console.log("oldInit", oldInit, "newInit", newInit);
 
     if (!oldInit || !newInit) {
       res.status(400).json({ message: "Status does not exist" });
@@ -130,11 +126,8 @@ export const editInitStatus = async (req: Request, res: Response) => {
     ]);
 
     const nodeSearched: { [key: string]: boolean } = {
-      // [newInit.id.toString()]: true,
       [newInit._id.toString()]: true,
     };
-
-    console.log("nodeSearched right after creating it", nodeSearched);
 
     interface INode {
       status: IStatusPopulated;
@@ -152,35 +145,14 @@ export const editInitStatus = async (req: Request, res: Response) => {
       },
     ];
 
-    // console.log(
-    //   "queue",
-    //   queue,
-    //   "queue.some",
-    //   queue.some((item) => !item.checked)
-    // );
     // we check if there are any nodes left to check
     while (queue.some((item) => !item.checked)) {
       const currentNode = queue.find((item) => !item.checked);
-      console.log("currentNode", currentNode);
       if (!currentNode) break;
-      // console.log("currentNode.status", currentNode.status);
       if (currentNode.status.transitions?.length) {
         for (const transition of currentNode.status.transitions) {
-          console.log(
-            "nodeSearched",
-            nodeSearched
-            // "transition.targetId.toString()",
-            // transition.targetId.toString(),
-            // "transition",
-            // transition
-          );
           // if the targetId is not in the nodeSearched object
           if (!nodeSearched[transition.targetId.toString()]) {
-            // console.log(
-            //   "doesnt find targetId in nodeSearched",
-            //   nodeSearched[transition.targetId.toString()]
-            // );
-
             // add it to the obj and set it to true
             nodeSearched[transition.targetId.toString()] = true;
             // find the status that the newInit is transitioning to
@@ -203,12 +175,10 @@ export const editInitStatus = async (req: Request, res: Response) => {
       }
       currentNode.checked = true;
     }
-    // console.log("nodeSearched", nodeSearched);
 
     const orphans = statuses.filter(
       (status) => !nodeSearched[status._id.toString()]
     );
-    // console.log("orphans", orphans);
 
     // we check if the old init is an orphan by
     // checking if it is in the nodeSearched object
@@ -251,15 +221,12 @@ export const test = async (req: Request, res: Response) => {
       { name: "deploy", initStatus: false, orphan: true, transitions: [] },
       { name: "cancel", initStatus: false, orphan: true, transitions: [] },
     ]);
-    // console.log("statuses before transitions", statuses);
 
     if (statuses.length === 0) {
       res.status(400).json({ message: "Statuses array is empty" });
       return;
     }
 
-    // create transitions array with the transitions from the initStatus to review, from review to deploy, from cancel to rejected, from rejected to deploy
-    // transitions: ITransition[]
     const transitions: ITransition[] = await Transition.insertMany([
       {
         name: "startReview",
@@ -283,7 +250,6 @@ export const test = async (req: Request, res: Response) => {
       },
     ]);
 
-    // Add the transitions to the statuses using type guards to check for undefined values
     const startStatus = statuses.find((status) => status.name === "start");
     const startReviewTransition = transitions.find(
       (transition) => transition.name === "startReview"
