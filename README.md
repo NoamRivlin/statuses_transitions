@@ -1,6 +1,6 @@
 # statuses_transitions
 
-#Link to the deployed (Site)[https://statuses-transitions-client.onrender.com]
+# Link to the deployed [Site](https://statuses-transitions-client.onrender.com)
 
 **Brief description of the project**
 
