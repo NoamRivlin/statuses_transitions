@@ -23,7 +23,7 @@ function App() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [statuses, setStatuses] = useState<IStatus[]>([]);
   const [transitions, setTransitions] = useState<ITransition[]>([]);
-  const [selectedStatus, setSelectedStatus] = useState<IStatus>();
+  const [initStatus, setInitStatus] = useState<IStatus>();
 
   const fetchStatusesAndTransitions = async () => {
     setIsLoading(true);
@@ -69,7 +69,7 @@ function App() {
   const handleDeleteTransition = async (id: any) => {};
 
   const handleEditInitStatus = async (id: any) => {
-    setSelectedStatus(id);
+    setInitStatus(id);
   };
 
   const handleTest = async () => {
@@ -109,89 +109,111 @@ function App() {
     <>
       <h1>Build Your Workflow</h1>
       <main className="container">
-        <h3>Add status </h3>
-        <input type="text" />
-        <button>Add</button>
-        {isLoading ? (
-          <p>Loading...</p>
-        ) : (
-          statuses.length > 0 &&
-          statuses.map((status) => (
-            <div key={status._id}>
-              <label>
-                <input
-                  type="radio"
-                  name="status"
-                  value={status._id}
-                  // checked={selectedStatus === status._id}
-                  checked={selectedStatus === status._id}
-                  onChange={() => handleEditInitStatus(status._id)}
-                />
-                {status.name}
-                <button onClick={() => handleDeleteStatus(status._id)}>
-                  Remove
-                </button>
-                {status.initStatus && <span>{"[Initial Status]"}</span>}
-                {status.orphan && <span>{"[Orphan]"}</span>}
-              </label>
-            </div>
-          ))
-        )}
+        <div className="status-container">
+          <h3>Statuses </h3>
+          <input type="text" />
+          <button>Add</button>
+          {isLoading ? (
+            <p>Loading...</p>
+          ) : (
+            statuses.length > 0 &&
+            statuses.map((status) => (
+              <div key={status._id}>
+                <label>
+                  <input
+                    type="radio"
+                    name="status"
+                    className="status"
+                    value={status._id}
+                    // checked={initStatus === status._id}
+                    checked={initStatus === status._id}
+                    onChange={() => handleEditInitStatus(status._id)}
+                  />
+                  {status.name}
+                  <button onClick={() => handleDeleteStatus(status._id)}>
+                    Remove
+                  </button>
+                  {status.initStatus && <span>{"[Initial Status]"}</span>}
+                  {status.orphan && <span>{"[Orphan]"}</span>}
+                </label>
+              </div>
+            ))
+          )}
+        </div>
         {/* ------------------------------------------- */}
-        <h3>Add transition </h3>
-        <input type="text" />
-        From:
-        <select name="source" id="source">
-          {statuses.length > 0 && ( // if statuses is not empty
-            <>
-              <option value="">Select source</option>
-              {statuses.map((status) => (
-                <option key={status._id} value={status._id}>
-                  {status.name}
-                </option>
-              ))}
-            </>
+        <div className="transition-container">
+          <h3>Transitions </h3>
+          <input type="text" />
+          From:
+          <select name="source" className="source">
+            {statuses.length > 0 && ( // if statuses is not empty
+              <>
+                <option value="">Select source</option>
+                {statuses.map((status) => (
+                  <option key={status._id} value={status._id}>
+                    {status.name}
+                  </option>
+                ))}
+              </>
+            )}
+          </select>
+          To:
+          <select name="target" id="target">
+            {statuses.length > 0 && ( // if statuses is not empty
+              <>
+                <option value="">Select target</option>
+                {statuses.map((status) => (
+                  <option key={status._id} value={status._id}>
+                    {status.name}
+                  </option>
+                ))}
+              </>
+            )}
+          </select>
+          <button>Add</button>
+          {isLoading ? (
+            <p>Loading...</p>
+          ) : (
+            // add text of transition list
+
+            transitions.length > 0 &&
+            transitions.map((transition) => (
+              <div key={transition._id} className="transition">
+                <ul>
+                  <li>
+                    {transition.name}:{" "}
+                    {
+                      statuses.find(
+                        (status) => status._id === transition.sourceId
+                      )?.name
+                    }
+                    {"-> "}
+                    {
+                      statuses.find(
+                        (status) => status._id === transition.targetId
+                      )?.name
+                    }
+                    <button
+                      onClick={() => handleDeleteTransition(transition._id)}
+                    >
+                      Remove
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            ))
           )}
-        </select>
-        To:
-        <select name="target" id="target">
-          {statuses.length > 0 && ( // if statuses is not empty
-            <>
-              <option value="">Select target</option>
-              {statuses.map((status) => (
-                <option key={status._id} value={status._id}>
-                  {status.name}
-                </option>
-              ))}
-            </>
-          )}
-        </select>
-        <button>Add</button>
-        {isLoading ? (
-          <p>Loading...</p>
-        ) : (
-          transitions.length > 0 &&
-          transitions.map((transition) => (
-            <div key={transition._id}>
-              <ul>
-                <li>{transition.name}</li>
-                {"->"}
-                <li>{transition.name}</li>
-                <button onClick={() => handleDeleteTransition(transition._id)}>
-                  Remove
-                </button>
-              </ul>
-            </div>
-          ))
-        )}
+        </div>
       </main>
-      <div className="reset-btn-container">
-        <button className="reset-btn" onClick={handleReset}>
-          Reset
-        </button>
-      </div>
-      <div className="test-btn-container">
-        <button onClick={handleTest}>Test</button>
+      <div className="reset-btns-container">
+        <div className="reset-btn">
+          <button className="reset-btn" onClick={handleReset}>
+            Reset
+          </button>
+        </div>
+        <div className="test-btn">
+          <button onClick={handleTest}>Test</button>
+        </div>
       </div>
     </>
   );
