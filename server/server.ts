@@ -3,6 +3,7 @@ import express from "express";
 import mongoose from "mongoose";
 import statusRoutes from "./routes/statusRoutes";
 import transitionRoutes from "./routes/transitionsRoutes";
+import cors from "cors";
 
 dotenv.config({ path: "./.env" });
 const PORT = process.env.PORT || 4000;
@@ -19,7 +20,7 @@ const connection = async () => {
 connection();
 
 const app = express();
-
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

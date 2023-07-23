@@ -34,10 +34,7 @@ export const addStatus = async (req: Request, res: Response) => {
 export const getStatuses = async (req: Request, res: Response) => {
   try {
     const allStatuses = await Status.find({});
-    if (!allStatuses || allStatuses.length < 1) {
-      res.status(400).json({ message: "No statuses found" });
-      return;
-    }
+
     res.status(200).json(allStatuses);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
