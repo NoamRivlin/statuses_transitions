@@ -24,10 +24,14 @@ function App() {
   const [statuses, setStatuses] = useState<IStatus[]>([]);
   const [transitions, setTransitions] = useState<ITransition[]>([]);
   const [initStatus, setInitStatus] = useState<IStatus>();
+  const [fromStatus, setFromStatus] = useState<string>("");
+  const [toStatus, setToStatus] = useState<string>("");
 
   const fetchStatusesAndTransitions = async () => {
     setIsLoading(true);
     try {
+      // do a single request to get both statuses and transitions
+
       const fetchedStatuses = (await axios.get(`${API_URL}/api/status`))?.data;
       const fetchedTransitions = (await axios.get(`${API_URL}/api/transition`))
         ?.data;
@@ -70,6 +74,12 @@ function App() {
 
   const handleEditInitStatus = async (id: any) => {
     setInitStatus(id);
+    try {
+      await axios.patch(`${API_URL}/api/status/${id}`);
+      fetchStatusesAndTransitions();
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const handleTest = async () => {
@@ -140,15 +150,30 @@ function App() {
             ))
           )}
         </div>
-        {/* ------------------------------------------- */}
+        {/* ---------------------------------------------------------- */}
         <div className="transition-container">
           <h3>Transitions </h3>
           <input type="text" />
           From:
-          <select name="source" className="source">
-            {statuses.length > 0 && ( // if statuses is not empty
+          <select
+            name="source"
+            className="source"
+            value={fromStatus}
+            onChange={(e) => {
+              console.log(
+                "e.target.value",
+                e.target.value,
+                "fromStatus",
+                fromStatus
+              );
+
+              setFromStatus(e.target.value);
+              setToStatus("");
+            }}
+          >
+            {statuses.length > 0 && (
               <>
-                <option value="">Select source</option>
+                <option value="">Select from</option>
                 {statuses.map((status) => (
                   <option key={status._id} value={status._id}>
                     {status.name}
@@ -158,15 +183,31 @@ function App() {
             )}
           </select>
           To:
-          <select name="target" id="target">
-            {statuses.length > 0 && ( // if statuses is not empty
+          <select
+            name="target"
+            id="target"
+            value={toStatus}
+            onChange={(e) => {
+              setToStatus(e.target.value);
+              console.log(
+                "e.target.value",
+                e.target.value,
+                "toStatus",
+                toStatus
+              );
+            }}
+            disabled={!fromStatus}
+          >
+            {statuses.length > 0 && (
               <>
-                <option value="">Select target</option>
-                {statuses.map((status) => (
-                  <option key={status._id} value={status._id}>
-                    {status.name}
-                  </option>
-                ))}
+                <option value="">Select to</option>
+                {statuses
+                  .filter((status) => status._id !== fromStatus)
+                  .map((status) => (
+                    <option key={status._id} value={status._id}>
+                      {status.name}
+                    </option>
+                  ))}
               </>
             )}
           </select>
