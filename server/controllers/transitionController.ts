@@ -4,6 +4,7 @@ import Transition from "../models/transitionModel";
 import { IStatus } from "../models/statusModel";
 import { ITransition } from "../models/transitionModel";
 
+
 export const addTransition = async (req: Request, res: Response) => {
   const { name, sourceId, targetId } = req.body;
 
@@ -50,10 +51,16 @@ export const getTransitions = async (req: Request, res: Response) => {
   }
 };
 
+
 export const deleteTransition = async (req: Request, res: Response) => {
+  // TODO: deleting a transition should update the statuses that are affected by it
+  // like if the transition is the only one that points to a status, that status should be marked as orphan 
+  // if removing reviewDeploy then deploy should be marked as orphan and not final
   const { id } = req.body;
   try {
-    const transitionToDelete = await Transition.findOne({ id });
+    const transitionToDelete = await Transition.findOne({ _id: id });
+    console.log('transitionToDelete', transitionToDelete);
+    
     if (!transitionToDelete) {
       res.status(400).json({ message: "Transition not found" });
       return;
@@ -71,7 +78,9 @@ export const deleteTransition = async (req: Request, res: Response) => {
     );
     await sourceStatus.save();
     await transitionToDelete.deleteOne();
-    res.status(201).json({ transitionToDelete, sourceStatus });
+    const updatedTransitions = await Transition.find({});
+        
+    res.status(201).json(updatedTransitions);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }

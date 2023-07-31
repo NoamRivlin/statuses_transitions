@@ -47,8 +47,10 @@ function App() {
       setTransitions(fetchedTransitions);
       setIsLoading(false);
     } catch (error) {
+      setIsLoading(false);
       console.error(error);
     } finally {
+      setIsLoading(false);
     }
   };
 
@@ -75,6 +77,7 @@ function App() {
     sourceId: string;
     targetId: string;
   }) => {
+    setIsLoading(true);
     try {
       if (
         name ===
@@ -96,7 +99,10 @@ function App() {
       setFromStatus("");
       setToStatus("");
       setStatuses(updatedStatuses.data)
-    } catch (error) {
+      setIsLoading(false);
+    
+  } catch (error) {
+    setIsLoading(false);
       console.error(error);
     }
   };
@@ -119,22 +125,25 @@ function App() {
 
       setIsLoading(false);
     } catch (error) {
+      setIsLoading(false);
       console.error(error);
     }
   };
 
   const handleDeleteTransition = async (id: string) => {
   
+    setIsLoading(true);
     try {
       // add to the request body the id of the status to be deleted
       const res = await axios.delete(`${API_URL}/api/transition/`, {
         data: { id },
       });
-
       setTransitions(res.data);
-      const updatedStatuses = await axios.get(`${API_URL}/api/status/`);
-      setStatuses(updatedStatuses.data)
+      const updatedStatuses = (await axios.get(`${API_URL}/api/status`))?.data;
+      setStatuses(updatedStatuses);
+      setIsLoading(false);
     } catch (error) {
+      setIsLoading(false);
       console.error(error);
     }
   
@@ -142,12 +151,16 @@ function App() {
 
   const handleEditInitStatus = async (id: string) => {
     setInitStatus(statuses.find((status) => status._id === id));
+    setIsLoading(true);
     try {
+      
       const res = await axios.patch(`${API_URL}/api/status/`, {
         id,
       });
       setStatuses(res.data.updatedStatuses);
+      setIsLoading(false);
     } catch (error) {
+      setIsLoading(false);
       console.error(error);
     }
   };
@@ -164,6 +177,7 @@ function App() {
       );
       setIsLoading(false);
     } catch (error) {
+      setIsLoading(false);
       console.error(error);
     }
   };
@@ -184,6 +198,7 @@ function App() {
       resetLocalState();
       setIsLoading(false);
     } catch (error) {
+      setIsLoading(false);
       console.error(error);
     }
   };
