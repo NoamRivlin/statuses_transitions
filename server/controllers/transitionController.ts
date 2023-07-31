@@ -51,9 +51,9 @@ export const getTransitions = async (req: Request, res: Response) => {
 };
 
 export const deleteTransition = async (req: Request, res: Response) => {
-  const { name } = req.body;
+  const { id } = req.body;
   try {
-    const transitionToDelete = await Transition.findOne({ name });
+    const transitionToDelete = await Transition.findOne({ id });
     if (!transitionToDelete) {
       res.status(400).json({ message: "Transition not found" });
       return;

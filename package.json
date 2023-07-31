@@ -4,7 +4,8 @@
   "scripts": {
     "start": "concurrently \"yarn run server\" \"yarn run client\"",
     "server": "cd server && yarn run dev",
-    "client": "cd client && yarn run dev"
+    "client": "cd client && yarn run dev",
+    "install-all" : " cd server && yarn install && cd ../client && yarn install"
   },
   "main": "index.js",
   "license": "MIT",

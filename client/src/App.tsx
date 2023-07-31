@@ -88,11 +88,14 @@ function App() {
         sourceId,
         targetId,
       });
-
+      const updatedStatuses = await axios.get(`${API_URL}/api/status/`);
+      console.log("updatedStatuses", updatedStatuses.data);
+      
       setTransitions([...transitions, res.data]);
       setTransitionName("");
       setFromStatus("");
       setToStatus("");
+      setStatuses(updatedStatuses.data)
     } catch (error) {
       console.error(error);
     }
@@ -120,7 +123,22 @@ function App() {
     }
   };
 
-  const handleDeleteTransition = async (id: string) => {};
+  const handleDeleteTransition = async (id: string) => {
+  
+    try {
+      // add to the request body the id of the status to be deleted
+      const res = await axios.delete(`${API_URL}/api/transition/`, {
+        data: { id },
+      });
+
+      setTransitions(res.data);
+      const updatedStatuses = await axios.get(`${API_URL}/api/status/`);
+      setStatuses(updatedStatuses.data)
+    } catch (error) {
+      console.error(error);
+    }
+  
+  };
 
   const handleEditInitStatus = async (id: string) => {
     setInitStatus(statuses.find((status) => status._id === id));
