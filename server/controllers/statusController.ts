@@ -8,7 +8,7 @@ import mongoose from "mongoose";
 export const addStatus = async (req: Request, res: Response) => {
   const { name } = req.body;
   try {
-    const numberOfStatuses = await Status.count({}); // returns a number
+    const numberOfStatuses = await Status.countDocuments({}); // returns a number
     if (numberOfStatuses === 0) {
       // if there are no statuses in the db, then the first one is the initStatus
       const initStatus = await Status.create({
@@ -16,7 +16,7 @@ export const addStatus = async (req: Request, res: Response) => {
         initStatus: true,
         orphan: false,
       });
-      res.status(201).json({ initStatus });
+      res.status(201).json(initStatus);
       return;
     }
     if (await Status.findOne({ name })) {
@@ -71,6 +71,7 @@ export const deleteStatus = async (req: Request, res: Response) => {
     await Transition.deleteMany({
       $or: [{ sourceId: id }, { targetId: id }],
     });
+    // TODO: implement editInit
 
     const updatedStatuses = await Status.find({});
     res.status(200).json(updatedStatuses);
