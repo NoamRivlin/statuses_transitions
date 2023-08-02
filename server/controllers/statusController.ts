@@ -10,6 +10,7 @@ export const addStatus = async (req: Request, res: Response) => {
   try {
     const numberOfStatuses = await Status.count({}); // returns a number
     if (numberOfStatuses === 0) {
+      // if there are no statuses in the db, then the first one is the initStatus
       const initStatus = await Status.create({
         name,
         initStatus: true,
@@ -72,7 +73,6 @@ export const deleteStatus = async (req: Request, res: Response) => {
     });
 
     const updatedStatuses = await Status.find({});
-    // res.status(200).json(statusToDelete);
     res.status(200).json(updatedStatuses);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
@@ -140,6 +140,7 @@ export const editInitStatus = async (req: Request, res: Response) => {
 
     const queue: INode[] = [
       {
+        // check is whether we've checked the node's neighboors
         status: newInit,
         checked: false,
       },
@@ -175,23 +176,17 @@ export const editInitStatus = async (req: Request, res: Response) => {
       }
       currentNode.checked = true;
     }
-
+    // TODO: do all of this in a single loop
     const orphans = statuses.filter(
       (status) => !nodeSearched[status._id.toString()]
     );
 
-    // we check if the old init is an orphan by
-    // checking if it is in the nodeSearched object
-    if (!nodeSearched[oldInit._id.toString()]) {
-      oldInit.orphan = true;
-      await oldInit.save();
-    }
     for (const status of orphans) {
       status.orphan = true;
       await status.save();
     }
     const updatedStatuses = await Status.find({});
-    res.status(200).json({ updatedStatuses });
+    res.status(200).json(updatedStatuses);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }

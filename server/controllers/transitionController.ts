@@ -4,7 +4,6 @@ import Transition from "../models/transitionModel";
 import { IStatus } from "../models/statusModel";
 import { ITransition } from "../models/transitionModel";
 
-
 export const addTransition = async (req: Request, res: Response) => {
   const { name, sourceId, targetId } = req.body;
 
@@ -13,6 +12,7 @@ export const addTransition = async (req: Request, res: Response) => {
       name,
     });
     if (transitionNameExists) {
+      // can't have two transitions with the same name
       res.status(400).json({ message: "Transition already exists" });
       return;
     }
@@ -22,7 +22,7 @@ export const addTransition = async (req: Request, res: Response) => {
       sourceId: sourceId,
       targetId: targetId,
     });
-
+    // if the source status is not an orphan, then the target status is not an orphan
     const sourceStatus: IStatus | null = await Status.findById(sourceId);
     if (!sourceStatus?.orphan) {
       const targetStatus: IStatus | null = await Status.findById(targetId);
@@ -31,7 +31,8 @@ export const addTransition = async (req: Request, res: Response) => {
         await targetStatus.save();
       }
     }
-
+    //  in the sourceStatus we track the transitions that have it as a source
+    // so we know which will be orphaned if the source status is deleted
     sourceStatus?.transitions.push(transition._id);
 
     await sourceStatus?.save();
@@ -51,16 +52,15 @@ export const getTransitions = async (req: Request, res: Response) => {
   }
 };
 
-
 export const deleteTransition = async (req: Request, res: Response) => {
   // TODO: deleting a transition should update the statuses that are affected by it
-  // like if the transition is the only one that points to a status, that status should be marked as orphan 
+  // like if the transition is the only one that points to a status, that status should be marked as orphan
   // if removing reviewDeploy then deploy should be marked as orphan and not final
   const { id } = req.body;
   try {
     const transitionToDelete = await Transition.findOne({ _id: id });
-    console.log('transitionToDelete', transitionToDelete);
-    
+    console.log("transitionToDelete", transitionToDelete);
+
     if (!transitionToDelete) {
       res.status(400).json({ message: "Transition not found" });
       return;
@@ -79,7 +79,7 @@ export const deleteTransition = async (req: Request, res: Response) => {
     await sourceStatus.save();
     await transitionToDelete.deleteOne();
     const updatedTransitions = await Transition.find({});
-        
+
     res.status(201).json(updatedTransitions);
   } catch (error: any) {
     res.status(500).json({ message: error.message });

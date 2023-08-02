@@ -6,7 +6,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 interface IStatus {
   name: string;
   _id: string;
-  transitions: Array<any>;
+  transitions: ITransition[];
   initStatus: boolean;
   orphan: boolean;
 }
@@ -28,39 +28,14 @@ function App() {
   const [statusName, setStatusName] = useState<string>("");
   const [transitionName, setTransitionName] = useState<string>("");
 
-  const fetchStatusesAndTransitions = async () => {
-    setIsLoading(true);
-    try {
-      // do a single request to get both statuses and transitions
-      const fetchedStatuses = (await axios.get(`${API_URL}/api/status`))?.data;
-      const fetchedTransitions = (await axios.get(`${API_URL}/api/transition`))
-        ?.data;
-
-      console.log(
-        "fetchedStatuses",
-        fetchedStatuses,
-        "fetchedTransitions",
-        fetchedTransitions
-      );
-
-      setStatuses(fetchedStatuses);
-      setTransitions(fetchedTransitions);
-      setIsLoading(false);
-    } catch (error) {
-      setIsLoading(false);
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleAddStatus = async (name: string) => {
     try {
+      // check if the status already exists and exit if it does
       if (name === statuses.find((status) => status.name === name)?.name) {
         return;
       }
-      const res = await axios.post(`${API_URL}/api/status/`, { name });
 
+      const res = await axios.post(`${API_URL}/api/status/`, { name });
       setStatuses([...statuses, res.data]);
       setStatusName("");
     } catch (error) {
@@ -79,30 +54,32 @@ function App() {
   }) => {
     setIsLoading(true);
     try {
+      // check if the transition already exists and exit if it does
       if (
         name ===
         transitions.find((transition) => transition.name === name)?.name
       ) {
         return;
       }
-
+      // create the transition with the source and target ids
       const res = await axios.post(`${API_URL}/api/transition/`, {
         name,
         sourceId,
         targetId,
       });
+      // because creating a transition can change the properties of status of the source and target
+      // we also fetch the updated statuses
       const updatedStatuses = await axios.get(`${API_URL}/api/status/`);
       console.log("updatedStatuses", updatedStatuses.data);
-      
+
       setTransitions([...transitions, res.data]);
       setTransitionName("");
       setFromStatus("");
       setToStatus("");
-      setStatuses(updatedStatuses.data)
+      setStatuses(updatedStatuses.data);
       setIsLoading(false);
-    
-  } catch (error) {
-    setIsLoading(false);
+    } catch (error) {
+      setIsLoading(false);
       console.error(error);
     }
   };
@@ -116,6 +93,7 @@ function App() {
       });
 
       setStatuses(res.data);
+      // remove all transitions that have the deleted status as source or target
       setTransitions(
         transitions.filter(
           (transition) =>
@@ -131,7 +109,6 @@ function App() {
   };
 
   const handleDeleteTransition = async (id: string) => {
-  
     setIsLoading(true);
     try {
       // add to the request body the id of the status to be deleted
@@ -139,6 +116,8 @@ function App() {
         data: { id },
       });
       setTransitions(res.data);
+      // because deleting a transition can change the properties of status of the source and target
+      // we also fetch the updated statuses
       const updatedStatuses = (await axios.get(`${API_URL}/api/status`))?.data;
       setStatuses(updatedStatuses);
       setIsLoading(false);
@@ -146,18 +125,18 @@ function App() {
       setIsLoading(false);
       console.error(error);
     }
-  
   };
 
   const handleEditInitStatus = async (id: string) => {
     setInitStatus(statuses.find((status) => status._id === id));
     setIsLoading(true);
     try {
-      
       const res = await axios.patch(`${API_URL}/api/status/`, {
         id,
       });
-      setStatuses(res.data.updatedStatuses);
+      console.log("res", res.data);
+
+      setStatuses(res.data);
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
@@ -244,6 +223,8 @@ function App() {
                     type="radio"
                     name="status"
                     value={status._id}
+                    // when the status is the initial status, check the radio button
+                    // so that the user can see which status is the initial status
                     checked={initStatus?._id === status._id}
                     onChange={() => {
                       handleEditInitStatus(status._id);
@@ -259,13 +240,15 @@ function App() {
                   </button>
                   {status.initStatus && <span>{"[Initial Status]"}</span>}
                   {status.orphan && <span>{"[Orphan]"}</span>}
+                  {/* if the status has no transitions, it is a final status */}
                   {status.transitions.length < 1 && <span>{"[Final]"}</span>}
                 </label>
               </div>
             ))
           )}
         </div>
-        {/* ---------------------------------------------------------- */}
+        {/* end statuses ---------------------------------------------------------- */}
+        {/* start transitions ---------------------------------------------------------- */}
         <div className="transition-container">
           <h3>Transitions </h3>
           <input
@@ -307,13 +290,16 @@ function App() {
             {statuses.length > 0 && (
               <>
                 <option value="">Select to</option>
-                {statuses
-                  .filter((status) => status._id !== fromStatus)
-                  .map((status) => (
-                    <option key={status._id} value={status._id}>
-                      {status.name}
-                    </option>
-                  ))}
+                {
+                  // don't show the source status as a target
+                  statuses
+                    .filter((status) => status._id !== fromStatus)
+                    .map((status) => (
+                      <option key={status._id} value={status._id}>
+                        {status.name}
+                      </option>
+                    ))
+                }
               </>
             )}
           </select>
@@ -338,6 +324,7 @@ function App() {
                 <li>
                   {transition.name}:{" "}
                   {
+                    // find the name of the source and target status by their ids
                     statuses.find(
                       (status) => status._id === transition.sourceId
                     )?.name

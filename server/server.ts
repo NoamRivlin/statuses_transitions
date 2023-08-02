@@ -20,13 +20,17 @@ const connection = async () => {
 connection();
 
 const app = express();
+// cors is needed to allow the frontend to make requests to the backend
 app.use(cors());
+//  to parse json in the body of the request (json data)
 app.use(express.json());
+// to parse url encoded data in the body of the request (form data)
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/status", statusRoutes);
 app.use("/api/transition", transitionRoutes);
 
+// listen for requests
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
