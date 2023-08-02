@@ -151,6 +151,3 @@ If you want to contribute to this project, follow these steps:
 
 [MIT](https://choosealicense.com/licenses/mit/)
 
-```
-
-```
