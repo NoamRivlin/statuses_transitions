@@ -2,6 +2,8 @@
 
 # Link to the deployed [Site](https://statuses-transitions-client.onrender.com)
 
+# Link to the Excalidraw planning board [Link](https://app.excalidraw.com/l/jAUe8IBaaH/5QLDUtFaa8Q)
+
 **Brief description of the project**
 
 ## Table of Contents
