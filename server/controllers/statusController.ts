@@ -181,6 +181,7 @@ export const editInitStatus = async (req: Request, res: Response) => {
     const orphans = statuses.filter(
       (status) => !nodeSearched[status._id.toString()]
     );
+    // TODO: do a single query to update all orphans
 
     for (const status of orphans) {
       status.orphan = true;
