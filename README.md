@@ -1,8 +1,11 @@
-# statuses_transitions
+# Screenshots and videos
+![image](https://github.com/NoamRivlin/statuses_transitions/assets/88899637/7d916c24-956c-4aae-b59c-fff8f1e0708a)
 
-# Link to the deployed [Site](https://statuses-transitions-client.onrender.com)
+https://github.com/NoamRivlin/statuses_transitions/assets/88899637/e7548c5b-1f94-4c73-a667-dd0d7d02f735
 
-# Link to the Excalidraw planning board [Link](https://excalidraw.com/#json=HtljOVuE496TE90G9x1A0,RLsDAPhcxlIb2yZJCucAWQ)
+## Link to the deployed [Site](https://statuses-transitions-client.onrender.com)
+
+## Link to the Excalidraw planning board [Link](https://excalidraw.com/#json=HtljOVuE496TE90G9x1A0,RLsDAPhcxlIb2yZJCucAWQ)
 
 **Brief description of the project**
 
