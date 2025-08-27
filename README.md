@@ -5,13 +5,6 @@ https://github.com/NoamRivlin/statuses_transitions/assets/88899637/e7548c5b-1f94
 
 ## [Link to the deployed site](https://statuses-transitions-client.onrender.com)
 
-**Brief description of the project**
-
-A workflow visualization and management tool built with TypeScript and MongoDB.
-This project enables users to define, edit, and visualize status transitions for any process or system, with a shared database backend.
-Multiple users can interact with the workflow in real-time, although unexpected behavior may occur if multiple users edit simultaneously.
-
-
 ## Table of Contents
 
 1. [Introduction](#introduction)
@@ -23,7 +16,7 @@ Multiple users can interact with the workflow in real-time, although unexpected 
 
 ## Introduction
 
-A web application designed for representing and managing workflow states and transitions, showcasing the BFS algorithm in a real use case.
+Web application representing managing workflow states and transitions, showcasing the BFS algorithm in a real use case.
 It provides a visual and interactive way to organize, track, and update the progression of items through various statuses—such as tasks in a project, tickets in a support system, or steps in a business process.
 
 The backend is built with TypeScript and MongoDB, offering a REST API for managing statuses and transitions.
