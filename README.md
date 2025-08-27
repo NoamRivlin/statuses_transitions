@@ -5,8 +5,6 @@ https://github.com/NoamRivlin/statuses_transitions/assets/88899637/e7548c5b-1f94
 
 ## [Link to the deployed site](https://statuses-transitions-client.onrender.com)
 
-## [Link to the Excalidraw planning board](https://excalidraw.com/#json=HtljOVuE496TE90G9x1A0,RLsDAPhcxlIb2yZJCucAWQ)
-
 **Brief description of the project**
 A workflow visualization and management tool built with TypeScript and MongoDB.
 This project enables users to define, edit, and visualize status transitions for any process or system, with a shared database backend.
