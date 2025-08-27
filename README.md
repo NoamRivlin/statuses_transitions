@@ -3,7 +3,7 @@
 
 https://github.com/NoamRivlin/statuses_transitions/assets/88899637/e7548c5b-1f94-4c73-a667-dd0d7d02f735
 
-## Link to the deployed [Site](https://statuses-transitions-client.onrender.com)
+## [Link to the deployed site](https://statuses-transitions-client.onrender.com)
 
 ## Link to the Excalidraw planning board [Link](https://excalidraw.com/#json=HtljOVuE496TE90G9x1A0,RLsDAPhcxlIb2yZJCucAWQ)
 
