@@ -8,6 +8,10 @@ https://github.com/NoamRivlin/statuses_transitions/assets/88899637/e7548c5b-1f94
 ## Link to the Excalidraw planning board [Link](https://excalidraw.com/#json=HtljOVuE496TE90G9x1A0,RLsDAPhcxlIb2yZJCucAWQ)
 
 **Brief description of the project**
+A workflow visualization and management tool built with TypeScript and MongoDB.
+This project enables users to define, edit, and visualize status transitions for any process or system, with a shared database backend.
+Multiple users can interact with the workflow in real time, though unexpected behavior may occur if multiple users edit simultaneously.
+
 
 ## Table of Contents
 
@@ -20,7 +24,11 @@ https://github.com/NoamRivlin/statuses_transitions/assets/88899637/e7548c5b-1f94
 
 ## Introduction
 
-Provide a brief introduction to your project. Mention the purpose, goals, and any important background information.
+A web application designed for representing and managing workflow states and transitions, showcasing the BFS algorithm in a real use case.
+It provides a visual and interactive way to organize, track, and update the progression of items through various statuses—such as tasks in a project, tickets in a support system, or steps in a business process.
+
+The backend is built with TypeScript and MongoDB, offering a REST API for managing statuses and transitions.
+The shared MongoDB means all users interact with the same data, making it easy to collaborate and experiment, but potentially leading to race conditions if multiple users edit at the same time. The project is ideal for demonstrating workflow logic, experimenting with process design, and serving as a foundation for custom workflow-based applications.
 
 ## Installation
 
